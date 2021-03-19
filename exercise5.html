@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+   <head>
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <title>Leaflet sample</title>
+      <link rel = "stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+      <script src = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.js"></script>
+   </head>
+
+   <body>
+      <div id = "map" style = "width: 1280px; height: 580px"></div>
+      <script>
+         // Creating map options
+         var mapOptions = {
+            center: [-0.0757,34.7865],
+            zoom: 6
+         }
+         
+		 
+         // Creating a map object
+         var map = new L.map('map', mapOptions);
+         
+
+		
+		//Adding basemaps
+		var basemaps = {
+							'OSM' : L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
+							
+							'Google Streets' : L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+								maxZoom: 20,
+								subdomains:['mt0','mt1','mt2','mt3']
+							}),
+
+							'Google Hybrid' : L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+								maxZoom: 20,
+								subdomains:['mt0','mt1','mt2','mt3']
+							}),
+							
+							'Google Satellite' : L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+								maxZoom: 20,
+								subdomains:['mt0','mt1','mt2','mt3']
+							}),
+					
+						};
+		
+		
+		//Adding Thematic Layers (GeoJSON and WMS)
+		var thematicLayers = {
+							'IMPLEMENTING_PARTNERS' : new L.GeoJSON.AJAX("IMPLEMENTING_PARTNERS.geojson",{
+								style: {color: "#00ff00"},
+								onEachFeature: onEachFeaturePartners
+							}),
+							'Offices' : new L.GeoJSON.AJAX("AVSI_OFFICES.geojson", {
+								style: {fill: "#0000FF"},
+								onEachFeature: onEachFeatureOffices
+							}),
+							'Temporary_Projects' : new L.GeoJSON.AJAX("TEMPORARY_WORLD_BANK_PROJECT.geojson", {
+								style: {fill: "#89102"},
+								onEachFeature: onEachFeatureOffices
+							}),
+							'Kenya' : new L.GeoJSON.AJAX("Kenya.geojson", {
+								style: {color: "#000000"},
+								onEachFeature: onEachFeatureOffices
+							})
+
+
+						};
+			
+			//Load the layer control onto the map
+			L.control.layers(basemaps, thematicLayers).addTo(map);
+
+			
+			//Choose the layers to be displayed on page load
+			basemaps.OSM.addTo(map);
+			thematicLayers['IMPLEMENTING_PARTNERS'].addTo(map);
+			thematicLayers['Offices'].addTo(map);
+			thematicLayers['Temporary_Projects'].addTo(map);
+			thematicLayers['Kenya'].addTo(map);
+			
+			
+		//Creating info section
+		var info = L.control();
+
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+			this.update();
+			return this._div;
+		};
+
+		// method that we will use to update the control based on feature properties passed
+		info.update = function (partners = null, offices = null, project=null) {
+			let text = '<h4>IMPLEMENTING_PARTNERS</h4>' +  (partners ?
+				'<b>' +'Name: </b>'+ partners.COUNTY + '</br>' + '<b>' +'Name: </b>'+ partners.COUNTY + '</br>' : 'click over a county');
+			text += '</br><h4>Offices</h4>' +  (offices ?
+				'<b>' +'Name: </b>'+ offices.NAME + '</br>'+ '<b>' +'Location: </b>'+ offices.LOCATION + '</br>' + '<b>' +'Country: </b>'+ offices.COUNTRY + '</br>' + '<b>' +'County: </b>'+ offices.COUNTY + '</br>' + '<b>' +'Projects: </b>'+ offices.PROJECTS + '</br>' : 'click over a offices');
+			this._div.innerHTML = text;
+		};
+
+		
+		info.addTo(map);
+
+
+		function highlightFeaturePartners(e) {
+			var layer = e.target;
+			info.update(layer.feature.properties);
+		}
+
+
+		function highlightFeatureOffices(e) {
+			var layer = e.target;
+			info.update(null, layer.feature.properties);
+		}
+		function highlightFeatureOffices(e) {
+			var layer = e.target;
+			info.update(null, layer.feature.properties);
+		}
+
+
+		function resetFeaturePartners(e) {
+			thematicLayers['IMPLEMENTING_PARTNERS'].resetStyle(e.target);
+			info.update();
+		}
+
+
+		function resetFeatureOffices(e) {
+			thematicLayers['Offices'].resetStyle(e.target);
+			info.update();
+		}
+		function resetFeatureOffices(e) {
+			thematicLayers['Temporary_Projects'].resetStyle(e.target);
+			info.update();
+		}
+		
+		
+		function onEachFeaturePartners(feature, layer) {
+			layer.on({
+				click: highlightFeaturePartners,
+				mouseover: highlightFeaturePartners,
+				mouseout: resetFeaturePartners
+			});
+		}
+		
+		
+		function onEachFeatureOffices(feature, layer) {
+			layer.on({
+				click: highlightFeatureOffices,
+				mouseover: highlightFeatureOffices,
+				mouseout: resetFeatureOffices
+			});
+		}
+
+		
+      </script>
+	  
+	  <style>
+	  
+	  .info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+		}
+		.info h4 {
+			margin: 0 0 5px;
+			color: #777;
+		}
+
+	</style>
+   </body>
+   
+</html>
